@@ -29,8 +29,8 @@ A tool that monitors your local Git repositories and shows which ones need to be
    ```bash
    # In both git_monitor.sh and show_repos.sh, modify:
    REPOS_ROOT_DIRS=(
-     "$HOME/DevProjects" 
-     "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/LifeOS (iCloud)"
+     "$HOME/Projects" 
+     "$HOME/Documents/Repositories"
    )
    ```
 
@@ -44,7 +44,7 @@ A tool that monitors your local Git repositories and shows which ones need to be
 4. Configure the shell script widget:
    - Name: Git Repos Status
    - Shell Script Path: `/bin/bash`
-   - Script: Enter the full path to the monitoring script (e.g., `/Users/yourusername/DevProjects/automonitor-git-repos/git_monitor.sh`)
+   - Script: Enter the full path to the monitoring script (e.g., `$HOME/git-repo-monitor/git_monitor.sh`)
    - Refresh Interval: 300 (seconds, adjust as needed)
    - Check "Show in menu bar"
 5. Set click action to run the AppleScript (for iTerm2):
@@ -56,7 +56,7 @@ A tool that monitors your local Git repositories and shows which ones need to be
        tell current window
            create tab with default profile
            tell current session
-               write text "/Users/yourusername/DevProjects/automonitor-git-repos/show_repos.sh"
+               write text "$HOME/git-repo-monitor/show_repos.sh"
            end tell
        end tell
    end tell
@@ -101,4 +101,4 @@ You can customize the scripts by modifying:
 - If you're having issues with the git fetch step, keep `SKIP_FETCH=true` in the scripts
 - Ensure the scripts have executable permissions
 - If iTerm2 doesn't open or gives an error, make sure iTerm2 is installed and the AppleScript syntax is correct
-- Make sure to replace `/Users/yourusername/` in the AppleScript with your actual home directory path
+- Make sure to replace `$HOME` in the AppleScript with your actual home directory path if needed
