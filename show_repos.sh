@@ -16,11 +16,13 @@ find_git_repos() {
   local repos=()
   for dir in "${REPOS_ROOT_DIRS[@]}"; do
     if [[ -d "$dir" ]]; then
-      while IFS= read -r repo; do
-        if [[ -n "$repo" ]]; then
+      while IFS= read -r -d '' gitdir; do
+        if [[ -n "$gitdir" ]]; then
+          # Get the parent directory of .git
+          repo="${gitdir%/.git}"
           repos+=("$repo")
         fi
-      done < <(find "$dir" -name ".git" -type d -maxdepth 2 -exec dirname {} \; 2>/dev/null)
+      done < <(find "$dir" -maxdepth 2 -name ".git" -type d -print0 2>/dev/null)
     fi
   done
   printf "%s\n" "${repos[@]}"
@@ -33,32 +35,39 @@ repo_needs_pull() {
     return 1
   fi
   
-  cd "$repo" || return 1
-  
-  # Fetch updates from remote (optional)
-  if [[ "$SKIP_FETCH" == "false" ]]; then
-    # Try to fetch with a timeout, but continue even if it fails
-    timeout 3s git fetch --quiet 2>/dev/null || true
-  fi
-  
-  # Check if branch is behind or diverged
-  git status -uno | grep -q -E 'Your branch is behind|have diverged' && return 0 || return 1
+  # Use subshell to avoid changing the working directory
+  (
+    cd "$repo" || return 1
+    
+    # Fetch updates from remote (optional)
+    if [[ "$SKIP_FETCH" == "false" ]]; then
+      # Try to fetch with a timeout, but continue even if it fails
+      timeout 3s git fetch --quiet 2>/dev/null || true
+    fi
+    
+    # Check if branch is behind or diverged
+    git status -uno | grep -q -E 'Your branch is behind|have diverged' && return 0 || return 1
+  ) 2>/dev/null
 }
 
 # Function to get status description for a repo
 get_repo_status() {
   local repo="$1"
-  cd "$repo" || return 1
   
-  local status_text=$(git status -uno | grep -E 'Your branch is behind|have diverged')
-  
-  if [[ $status_text == *"behind"* ]]; then
-    echo "$status_text" | sed -E 's/.*behind .* by ([0-9]+) commit.*/\1 commits behind/'
-  elif [[ $status_text == *"diverged"* ]]; then
-    echo "branches have diverged"
-  else
-    echo "needs attention"
-  fi
+  # Use subshell to avoid changing the working directory
+  (
+    cd "$repo" || return 1
+    
+    local status_text=$(git status -uno | grep -E 'Your branch is behind|have diverged')
+    
+    if [[ $status_text == *"behind"* ]]; then
+      echo "$status_text" | sed -E 's/.*behind .* by ([0-9]+) commit.*/\1 commits behind/'
+    elif [[ $status_text == *"diverged"* ]]; then
+      echo "branches have diverged"
+    else
+      echo "needs attention"
+    fi
+  ) 2>/dev/null
 }
 
 # Function to open repo in Finder
@@ -91,8 +100,12 @@ open_in_terminal() {
 # Function to pull the repository
 pull_repo() {
   local repo="$1"
-  cd "$repo" || return 1
-  git pull
+  
+  # Use subshell to avoid changing the working directory
+  (
+    cd "$repo" || return 1
+    git pull
+  )
   echo "Pulled updates for $(basename "$repo")"
   echo "Press Enter to continue..."
   read -r
@@ -104,13 +117,14 @@ main() {
   
   # Read repositories one per line
   while IFS= read -r repo; do
-    if [[ -d "$repo" ]] && repo_needs_pull "$repo"; then
+    if [[ -d "$repo" ]] && repo_needs_pull "$repo" 2>/dev/null; then
       needs_pull+=("$repo")
     fi
   done < <(find_git_repos)
   
   # If no repos need pulling, show a notification and exit
   if [[ ${#needs_pull[@]} -eq 0 ]]; then
+    echo "✅ All repositories are up to date!"
     osascript -e 'display notification "All repositories are up to date!" with title "Git Repository Monitor"'
     exit 0
   fi

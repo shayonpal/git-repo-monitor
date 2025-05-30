@@ -17,7 +17,7 @@ for dir in "${REPOS_ROOT_DIRS[@]}"; do
         cd "$repo" 2>/dev/null && git status -uno | grep 'Your branch' || echo "  No branch status"
         echo ""
       fi
-    done < <(find "$dir" -name ".git" -type d -maxdepth 2 -exec dirname {} \; 2>/dev/null)
+    done < <(find "$dir" -maxdepth 2 -name ".git" -type d -exec dirname {} \; 2>/dev/null)
   else
     echo "Directory does not exist: $dir"
   fi
