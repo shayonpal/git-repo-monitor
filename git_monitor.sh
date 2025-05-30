@@ -20,11 +20,13 @@ find_git_repos() {
   local repos=()
   for dir in "${REPOS_ROOT_DIRS[@]}"; do
     if [[ -d "$dir" ]]; then
-      while IFS= read -r repo; do
-        if [[ -n "$repo" ]]; then
+      while IFS= read -r -d '' gitdir; do
+        if [[ -n "$gitdir" ]]; then
+          # Get the parent directory of .git
+          repo="${gitdir%/.git}"
           repos+=("$repo")
         fi
-      done < <(find "$dir" -name ".git" -type d -maxdepth 2 -exec dirname {} \; 2>/dev/null)
+      done < <(find "$dir" -maxdepth 2 -name ".git" -type d -print0 2>/dev/null)
     fi
   done
   printf "%s\n" "${repos[@]}"
@@ -37,17 +39,19 @@ repo_needs_pull() {
     return 1
   fi
   
-  # Change to the repository directory
-  cd "$repo" || return 1
-  
-  # Fetch updates from remote (optional)
-  if [[ "$SKIP_FETCH" == "false" ]]; then
-    # Try to fetch with a timeout, but continue even if it fails
-    timeout 3s git fetch --quiet 2>/dev/null || true
-  fi
-  
-  # Check if branch is behind or diverged
-  git status -uno | grep -q -E 'Your branch is behind|have diverged' && return 0 || return 1
+  # Use subshell to avoid changing the working directory
+  (
+    cd "$repo" || return 1
+    
+    # Fetch updates from remote (optional)
+    if [[ "$SKIP_FETCH" == "false" ]]; then
+      # Try to fetch with a timeout, but continue even if it fails
+      timeout 3s git fetch --quiet 2>/dev/null || true
+    fi
+    
+    # Check if branch is behind or diverged
+    git status -uno | grep -q -E 'Your branch is behind|have diverged' && return 0 || return 1
+  )
 }
 
 # Generate BTT JSON output
@@ -77,7 +81,7 @@ main() {
       break
     fi
     
-    if repo_needs_pull "$repo"; then
+    if repo_needs_pull "$repo" 2>/dev/null; then
       repo_name=$(basename "$repo")
       needs_pull+=("$repo_name")
     fi
@@ -94,4 +98,4 @@ main() {
 }
 
 # Run the script
-main
+main 2>/dev/null
