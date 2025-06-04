@@ -87,7 +87,7 @@ When clicking on the menu bar item, an iTerm2 tab will open that:
 You can customize the scripts by modifying:
 
 - `REPOS_ROOT_DIRS`: Directories to search for Git repositories
-- `SKIP_FETCH`: Set to false if you want to fetch updates (may require SSH key setup)
+- `SKIP_FETCH`: Set to true if you want to skip fetching updates (default: false for accurate monitoring)
 - `MAX_REPOS`: Maximum number of repositories to check (default: 15)
 - `maxdepth` value in the find command (currently set to 2)
 - Colors in the color variables section of git_monitor.sh
@@ -98,7 +98,7 @@ You can customize the scripts by modifying:
 
 - If no repositories are found, check that your repository directories are correctly specified
 - If the script seems slow, consider reducing the maxdepth value in the find command to limit the search depth
-- If you're having issues with the git fetch step, keep `SKIP_FETCH=true` in the scripts
+- If you're having issues with the git fetch step, set `SKIP_FETCH=true` in the scripts
 - Ensure the scripts have executable permissions
 - If iTerm2 doesn't open or gives an error, make sure iTerm2 is installed and the AppleScript syntax is correct
 - Make sure to replace `$HOME` in the AppleScript with your actual home directory path if needed

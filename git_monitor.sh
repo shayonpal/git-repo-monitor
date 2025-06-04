@@ -8,7 +8,7 @@ REPOS_ROOT_DIRS=(
   "$HOME/DevProjects" 
   "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/LifeOS (iCloud)"
 )  # Add all directories that contain your git repos
-SKIP_FETCH=true  # Set to false if you want to fetch updates from remote
+SKIP_FETCH=false  # Set to true if you want to skip fetching updates from remote
 MAX_REPOS=15     # Maximum number of repositories to check
 
 # Colors
