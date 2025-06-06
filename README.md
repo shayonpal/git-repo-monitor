@@ -1,13 +1,61 @@
 # Git Repository Monitor
 
-A tool that monitors your local Git repositories and shows which ones need to be pulled through a BetterTouchTool menu bar item.
+Automated git repository monitoring system integrated with BetterTouchTool for macOS menu bar notifications.
 
-## Features
+## Overview
 
-- Finds all Git repositories in specified directories
-- Compares local branches with their remote counterparts
-- Shows a visual indicator in the menu bar when repos need updating
-- Displays a terminal interface to manage repositories when clicked
+This system monitors multiple git repositories and provides visual feedback through the macOS menu bar. When repositories fall behind their remotes or have diverged branches, you get immediate notification and can take action through an interactive menu.
+
+## Components
+
+### Core Scripts
+
+- **`git_monitor.sh`** - Main monitoring script that runs every 30 minutes via BetterTouchTool
+- **`open_in_iterm.scpt`** - AppleScript that provides smart iTerm2 integration
+- **`interactive_menu.sh`** - Interactive terminal interface for repository management
+- **`fix_repos.sh`** - Automated repository update script
+- **`git_utils.sh`** - Shared utilities for consistent repository discovery
+
+### Legacy Scripts
+
+Older scripts moved to `legacy-scripts/` directory for reference.
+
+## Workflow
+
+1. **Continuous Monitoring**: BetterTouchTool runs `git_monitor.sh` every 30 minutes
+2. **Menu Bar Display**: Shows repository status (✅ all clean, ⬇️ N repos need attention)
+3. **Smart Interaction**: Click menu bar icon triggers different actions:
+   - **All repos clean**: Shows notification only
+   - **Repos need attention**: Opens iTerm2 with interactive menu
+
+## Interactive Menu Options
+
+When repositories need updates, you get these options:
+
+- **`t`** - Open repository in Terminal (iTerm2)
+- **`c`** - Open repository in Cursor IDE  
+- **`z`** - Open repository in Zed IDE
+- **`p`** - Pull updates for a specific repository
+- **`a`** - Pull updates for ALL repositories
+- **`q`** - Quit
+
+## Repository Detection
+
+The system monitors repositories in:
+- `~/DevProjects/`
+- `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/LifeOS (iCloud)/`
+
+Handles both:
+- **Behind remote**: Repositories that need pulling
+- **Diverged branches**: Repositories with conflicting local and remote changes
+
+## Auto-Fix Capabilities
+
+The system can automatically:
+- Pull updates for clean repositories
+- Handle uncommitted changes with user-provided commit messages
+- Use rebase strategy to avoid merge conflicts
+- Resolve diverged branches safely
 
 ## Setup
 
@@ -15,90 +63,71 @@ A tool that monitors your local Git repositories and shows which ones need to be
 
 - macOS
 - [BetterTouchTool](https://folivora.ai/)
-- [iTerm2](https://iterm2.com/) (recommended)
-- Git
-
-### Installation
-
-1. Clone this repository or download the scripts
-2. Make the scripts executable (if not already):
-   ```bash
-   chmod +x git_monitor.sh show_repos.sh
-   ```
-3. Edit the scripts to configure your repository directories:
-   ```bash
-   # In both git_monitor.sh and show_repos.sh, modify:
-   REPOS_ROOT_DIRS=(
-     "$HOME/Projects" 
-     "$HOME/Documents/Repositories"
-   )
-   ```
+- [iTerm2](https://iterm2.com/)
+- Git repositories with remote tracking
+- Cursor IDE (optional)
+- Zed IDE (optional)
 
 ### BetterTouchTool Configuration
 
-#### Main Status Item
-
-1. Open BetterTouchTool
-2. Go to "Automations & Named & Other Triggers" section
-3. Click "Add New" and select "Shell Script / Task Widget" under "Automations & Named Triggers"
-4. Configure the shell script widget:
-   - Name: Git Repos Status
-   - Shell Script Path: `/bin/bash`
-   - Script: Enter the full path to the monitoring script (e.g., `$HOME/git-repo-monitor/git_monitor.sh`)
-   - Refresh Interval: 300 (seconds, adjust as needed)
-   - Check "Show in menu bar"
-5. Set click action to run the AppleScript (for iTerm2):
-   - Under "Assigned Actions", click the "+" button
-   - Select "Run Apple Script (async in background)"
-   - Enter the following script:
-   ```applescript
-   tell application "iTerm2"
-       tell current window
-           create tab with default profile
-           tell current session
-               write text "$HOME/git-repo-monitor/show_repos.sh"
-           end tell
-       end tell
-   end tell
-   ```
-   - Or, if you prefer, select "Run Apple Script File (async)" and point to the included `open_in_iterm.scpt` file (update the path in this file first)
-6. Click Save
+1. Create a new menu bar widget in BetterTouchTool
+2. Set script to run: `/Users/shayon/DevProjects/automonitor-git-repos/git_monitor.sh`
+3. Set refresh interval to 1800 seconds (30 minutes)
+4. Configure display to show JSON output as menu bar text
+5. Set click action to run AppleScript: `/Users/shayon/DevProjects/automonitor-git-repos/open_in_iterm.scpt`
 
 ## Visual Indicators
 
 The script provides visual feedback in the menu bar:
 
-- ✅ in green text: All repositories are up-to-date
-- ⬇️ with number in orange text: Some repositories need to be pulled
-- ⏱️ in orange text: Timeout occurred while checking repositories
+- **✅** in green: All repositories are up-to-date
+- **⬇️ N** in orange: N repositories need attention
+- **⏱️** in orange: Timeout occurred while checking
 
-## Interaction
+## Files Structure
 
-When clicking on the menu bar item, an iTerm2 tab will open that:
-- Lists all repositories that need updates
-- Shows how many commits behind each repository is or if branches have diverged
-- Provides options to:
-  - Open the repository in Finder
-  - Open the repository in Terminal
-  - Pull updates for the repository
+```
+automonitor-git-repos/
+├── git_utils.sh           # Shared repository discovery functions
+├── git_monitor.sh         # BetterTouchTool monitoring script
+├── open_in_iterm.scpt     # Smart AppleScript launcher
+├── interactive_menu.sh    # Interactive user interface
+├── fix_repos.sh          # Automated repository fixes
+├── README.md             # This documentation
+└── legacy-scripts/       # Archived old scripts
+```
+
+## Features
+
+- **Cross-device workflow**: Works seamlessly when switching between development machines
+- **Smart notifications**: Only interrupts when action is needed
+- **Multiple IDE support**: Open repositories in iTerm2, Cursor, or Zed
+- **Granular control**: Update specific repositories or all at once
+- **Diverged branch handling**: Safely resolves conflicting changes
+- **Uncommitted changes**: Prompts for commit messages before pulling
+- **Consistent logic**: Shared utilities ensure all scripts work identically
+- **15-second fetch timeout**: Reliable network operations
 
 ## Customization
 
-You can customize the scripts by modifying:
+You can customize the system by modifying `git_utils.sh`:
 
-- `REPOS_ROOT_DIRS`: Directories to search for Git repositories
-- `SKIP_FETCH`: Set to true if you want to skip fetching updates (default: false for accurate monitoring)
-- `MAX_REPOS`: Maximum number of repositories to check (default: 15)
-- `maxdepth` value in the find command (currently set to 2)
-- Colors in the color variables section of git_monitor.sh
-- `TERMINAL_APP` in show_repos.sh to use iTerm instead of Terminal.app
-- The AppleScript to customize how iTerm2 opens (new window vs. new tab)
+- `REPOS_ROOT_DIRS`: Directories to search for git repositories
+- Fetch timeout duration
+- Repository discovery depth
 
 ## Troubleshooting
 
-- If no repositories are found, check that your repository directories are correctly specified
-- If the script seems slow, consider reducing the maxdepth value in the find command to limit the search depth
-- If you're having issues with the git fetch step, set `SKIP_FETCH=true` in the scripts
-- Ensure the scripts have executable permissions
-- If iTerm2 doesn't open or gives an error, make sure iTerm2 is installed and the AppleScript syntax is correct
-- Make sure to replace `$HOME` in the AppleScript with your actual home directory path if needed
+- If no repositories are found, check `REPOS_ROOT_DIRS` in `git_utils.sh`
+- Ensure all scripts have executable permissions
+- For slow performance, the fetch timeout can be adjusted
+- If iTerm2 doesn't open, verify the AppleScript path in BetterTouchTool
+
+## Version History
+
+- **2025-01-06**: Enhanced system with shared utilities, IDE support, and diverged branch handling
+- **Previous**: Basic monitoring with simple pull functionality
+
+## Last Updated
+
+2025-01-06 - Complete system overhaul with enhanced workflow and reliability improvements.
