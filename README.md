@@ -2,6 +2,10 @@
 
 Automated git repository monitoring system integrated with BetterTouchTool for macOS menu bar notifications.
 
+[![GitHub](https://img.shields.io/badge/GitHub-shayonpal%2Fgit--repo--monitor-blue)](https://github.com/shayonpal/git-repo-monitor)
+[![Status](https://img.shields.io/badge/Status-Active-success)](https://github.com/shayonpal/git-repo-monitor)
+[![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey)](https://github.com/shayonpal/git-repo-monitor)
+
 ## Overview
 
 This system monitors multiple git repositories and provides visual feedback through the macOS menu bar. When repositories fall behind their remotes or have diverged branches, you get immediate notification and can take action through an interactive menu.
@@ -123,11 +127,27 @@ You can customize the system by modifying `git_utils.sh`:
 - For slow performance, the fetch timeout can be adjusted
 - If iTerm2 doesn't open, verify the AppleScript path in BetterTouchTool
 
+## Recent Updates
+
+- **2025-06-06**: Fixed remote change detection by enabling fetch by default (resolved issue #1)
+- **2025-06-06**: Enhanced git monitoring system with shared utilities and IDE integration
+- **2025-06-06**: Updated AppleScript path to match current directory structure
+- **2025-06-02**: Consolidated documentation and improved project structure
+
+## Known Issues
+
+Currently no open issues. The system is stable and actively maintained.
+
+## Contributing
+
+Issues and pull requests are welcome at [GitHub](https://github.com/shayonpal/git-repo-monitor).
+
 ## Version History
 
-- **2025-01-06**: Enhanced system with shared utilities, IDE support, and diverged branch handling
+- **2025-06-06**: Enhanced system with shared utilities, IDE support, and diverged branch handling
+- **2025-06-04**: Fixed remote change detection issue
 - **Previous**: Basic monitoring with simple pull functionality
 
 ## Last Updated
 
-2025-01-06 - Complete system overhaul with enhanced workflow and reliability improvements.
+2025-06-24 - Documentation updated to reflect current project status and repository structure.

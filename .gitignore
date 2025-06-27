@@ -25,3 +25,7 @@ Thumbs.db
 *.tmp
 *.temp
 CLAUDE.local.md
+
+# Syncthing
+.stfolder/
+.stversions/
