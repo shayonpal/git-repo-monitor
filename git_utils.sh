@@ -5,8 +5,7 @@
 
 # Configuration - central place for all repo discovery settings
 REPOS_ROOT_DIRS=(
-  "$HOME/DevProjects" 
-  "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/LifeOS (iCloud)"
+  "$HOME/DevProjects"
 )
 
 # Function to find all git repositories
