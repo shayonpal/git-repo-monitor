@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2025-06-24 15:38:23 EDT
+## [Unreleased] - 2025-07-14
+
+### Changed
+- Removed Obsidian vault from monitoring scope in `git_utils.sh`
+- Simplified REPOS_ROOT_DIRS configuration to only monitor DevProjects directory
+- Reduced unnecessary monitoring overhead for non-development repositories
+
+### Added
+- Next Session Instructions.md for session continuity and handoff documentation
+
+## [1.1.1] - 2025-07-14
 
 ### Added
 - GitHub badges to README for project visibility
